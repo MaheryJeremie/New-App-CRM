@@ -1,0 +1,390 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block stylesheets %}
+<style>
+    {{ parent() }}
+    /* Dashboard Styles */
+:root {
+    --primary: #4f46e5;
+    --primary-light: rgba(79, 70, 229, 0.1);
+    --secondary: #ec4899;
+    --success: #10b981;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+    --gray-50: #f9fafb;
+    --gray-100: #f3f4f6;
+    --gray-200: #e5e7eb;
+    --gray-700: #374151;
+    --gray-800: #1f2937;
+    --gray-900: #111827;
+    --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    --card-shadow-hover: 0 8px 24px rgba(0, 0, 0, 0.1);
+}
+
+body {
+    font-family: system-ui, -apple-system, sans-serif;
+    background: linear-gradient(135deg, var(--gray-50) 0%, #e5e7ff 100%);
+    color: var(--gray-800);
+    line-height: 1.6;
+}
+
+.container {
+    max-width: 1440px;
+    margin: 0 auto;
+    padding: 2rem;
+    animation: fadeIn 0.5s ease-out;
+}
+
+/* Dashboard Grid */
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+    opacity: 0;
+    animation: slideUp 0.5s ease-out forwards;
+}
+
+.dashboard-grid:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.dashboard-grid:nth-child(3) {
+    animation-delay: 0.4s;
+}
+
+/* Card Styles */
+.card {
+    background: white;
+    border-radius: 1rem;
+    box-shadow: var(--card-shadow);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--card-shadow-hover);
+}
+
+/* Stat Cards */
+.stat-card {
+    padding: 1.5rem;
+    background: linear-gradient(135deg, white 0%, #fafafa 100%);
+}
+
+.stat-card h2 {
+    color: var(--gray-700);
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 0 0 0.5rem 0;
+}
+
+.stat-card .stat-value {
+    color: var(--primary);
+    font-size: 2rem;
+    font-weight: 700;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    display: block;
+    position: relative;
+}
+
+.stat-card .stat-value::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: var(--primary);
+    transition: width 0.3s ease;
+}
+
+.stat-card .stat-value:hover {
+    color: var(--secondary);
+    transform: translateX(5px);
+}
+
+.stat-card .stat-value:hover::after {
+    width: 100%;
+}
+
+/* Chart Container */
+.chart-container {
+    padding: 1.5rem;
+    background: white;
+}
+
+.chart-container h3 {
+    color: var(--gray-800);
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin: 0 0 1rem 0;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid var(--gray-100);
+}
+
+canvas {
+    max-width: 100%;
+    height: auto !important;
+    margin-top: 1rem;
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Chart Customizations */
+#budgetChart,
+#expenseChart,
+#clientBudgetChart {
+    transition: all 0.3s ease;
+}
+
+.chart-container:hover canvas {
+    transform: scale(1.02);
+    transition: transform 0.3s ease;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .container {
+        padding: 1rem;
+    }
+    
+    .dashboard-grid {
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1rem;
+    }
+}
+
+@media (max-width: 640px) {
+    .stat-card h2 {
+        font-size: 1.1rem;
+    }
+    
+    .stat-card .stat-value {
+        font-size: 1.5rem;
+    }
+    
+    .chart-container {
+        padding: 1rem;
+    }
+}
+
+/* Loading States */
+.chart-container.loading {
+    position: relative;
+    min-height: 200px;
+}
+
+.chart-container.loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 40px;
+    height: 40px;
+    margin: -20px 0 0 -20px;
+    border: 3px solid var(--gray-200);
+    border-top-color: var(--primary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+</style>
+{% endblock %}
+
+{% block body %}
+    <div class="container">
+        <h1>Dashboard</h1>
+
+        <div class="dashboard-grid">
+            <div class="card stat-card">
+                <div>
+                    <h2>Total Dépenses lead</h2>
+                    <span class="stat-value">{{ totalExpensesLead }}</span>
+                </div>
+            </div>
+
+            <div class="card stat-card">
+                <div>
+                    <h2>Total Dépenses ticket</h2>
+                    <span class="stat-value">{{ totalExpensesTicket }}</span>
+                </div>
+            </div>
+            <div class="card stat-card">
+                <div>
+                    <h2>Budget total client</h2>
+                    <span class="stat-value">{{ budgetTotal }}</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="dashboard-grid">
+            <div class="card chart-container">
+                <h3>Dépenses Leads groupées par date</h3>
+                <canvas id="budgetChart"></canvas>
+            </div>
+
+            <div class="card chart-container">
+                <h3>Dépenses Tickets groupées par date</h3>
+                <canvas id="expenseChart"></canvas>
+            </div>
+        </div>
+
+        <div class="dashboard-grid">
+            <div class="card chart-container">
+                <h3>Budget total par client</h3>
+                <canvas id="clientBudgetChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts pour les graphiques -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Fonction pour grouper et sommer les données par date
+        function groupAndSumByDate(data) {
+            const grouped = {};
+            
+            data.forEach(item => {
+                const date = item.dateDepense;
+                if (!grouped[date]) {
+                    grouped[date] = 0;
+                }
+                grouped[date] += item.montant;
+            });
+            
+            return {
+                labels: Object.keys(grouped),
+                values: Object.values(grouped)
+            };
+        }
+
+        // Données groupées pour les leads
+        const leadsData = groupAndSumByDate({{ leads|json_encode|raw }});
+        
+        // Graphique des dépenses leads groupées
+        const budgetCtx = document.getElementById('budgetChart').getContext('2d');
+        const budgetChart = new Chart(budgetCtx, {
+            type: 'bar',
+            data: {
+                labels: leadsData.labels,
+                datasets: [{
+                    label: 'Dépenses Leads',
+                    data: leadsData.values,
+                    backgroundColor: 'rgba(79, 70, 229, 0.8)',
+                    borderColor: 'rgba(79, 70, 229, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        // Données groupées pour les tickets
+        const ticketsData = groupAndSumByDate({{ tickets|json_encode|raw }});
+        
+        // Graphique des dépenses tickets groupées
+        const expenseCtx = document.getElementById('expenseChart').getContext('2d');
+        const expenseChart = new Chart(expenseCtx, {
+            type: 'bar',
+            data: {
+                labels: ticketsData.labels,
+                datasets: [{
+                    label: 'Dépenses Tickets',
+                    data: ticketsData.values,
+                    backgroundColor: 'rgba(236, 72, 153, 0.8)',
+                    borderColor: 'rgba(236, 72, 153, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        // Graphique des budgets par client
+        const clientBudgetCtx = document.getElementById('clientBudgetChart').getContext('2d');
+        const clientBudgetChart = new Chart(clientBudgetCtx, {
+            type: 'pie',
+            data: {
+                labels: {{ allBudgets|map(budget => budget[0])|json_encode|raw }},
+                datasets: [{
+                    label: 'Budget total par client',
+                    data: {{ allBudgets|map(budget => budget[1])|json_encode|raw }},
+                    backgroundColor: [
+                        'rgba(79, 70, 229, 0.8)',
+                        'rgba(59, 130, 246, 0.8)',
+                        'rgba(236, 72, 153, 0.8)',
+                        'rgba(245, 158, 11, 0.8)',
+                        'rgba(16, 185, 129, 0.8)'
+                    ],
+                    borderColor: [
+                        'rgba(79, 70, 229, 1)',
+                        'rgba(59, 130, 246, 1)',
+                        'rgba(236, 72, 153, 1)',
+                        'rgba(245, 158, 11, 1)',
+                        'rgba(16, 185, 129, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+    </script>
+{% endblock %}
