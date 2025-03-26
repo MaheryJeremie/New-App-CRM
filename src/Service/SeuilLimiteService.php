@@ -56,4 +56,21 @@ class SeuilLimiteService
         
         return null;
     }
+    public function saveSeuilLimite(float $pourcentage): ?array
+    {
+        $seuilLimite = [
+            'pourcentage' => $pourcentage,
+            'dateModif' => (new DateTime('now', new DateTimeZone('+03:00')))->format('Y-m-d\TH:i:s'),
+        ];
+
+        $response = $this->httpClient->request('POST', $this->apiUrl . '/api/seuil', [
+            'json' => $seuilLimite
+        ]);
+
+        if ($response->getStatusCode() === 200) {
+            return $response->toArray();
+        }
+        
+        return null;
+    }
 }
