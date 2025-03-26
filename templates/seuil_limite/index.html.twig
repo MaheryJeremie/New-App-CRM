@@ -83,6 +83,19 @@
             box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
         }
 
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 2rem;
+            color: #6b7280;
+        }
+
+        .empty-state-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            color: #d1d5db;
+        }
+
         /* Button Styles */
         .btn {
             display: inline-flex;
@@ -171,24 +184,40 @@
         <h1>Configuration du taux d'alerte</h1>
         
         <div class="card">
-            <div class="info-group">
-                <div class="info-item">
-                    <span class="info-label">Taux actuel :</span>
-                    <span class="info-value">{{ seuilLimite.pourcentage }}%</span>
+            {% if seuilLimite is defined and seuilLimite is not null %}
+                <div class="info-group">
+                    <div class="info-item">
+                        <span class="info-label">Taux actuel :</span>
+                        <span class="info-value">{{ seuilLimite.pourcentage }}%</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Dernière modification :</span>
+                        <span class="info-value">{{ seuilLimite.dateModif|date('d/m/Y H:i') }}</span>
+                    </div>
                 </div>
-                <div class="info-item">
-                    <span class="info-label">Dernière modification :</span>
-                    <span class="info-value">{{ seuilLimite.dateModif|date('d/m/Y H:i') }}</span>
+            {% else %}
+                <div class="empty-state">
+                    <div class="empty-state-icon">
+                        <i class="fas fa-exclamation-circle"></i>
+                    </div>
+                    <h3>Pas encore de taux configuré</h3>
+                    <p>Veuillez définir un taux d'alerte pour commencer</p>
                 </div>
-            </div>
+            {% endif %}
             
             <div class="button-group">
                 <a href="{{ path('seuil_limite_modifier') }}" class="btn btn-primary">
-                    Modifier le taux
+                    {% if seuilLimite is defined and seuilLimite is not null %}
+                        Modifier le taux
+                    {% else %}
+                        Définir le taux
+                    {% endif %}
                 </a>
-                <a href="{{ path('seuil_limite_historique') }}" class="btn btn-secondary">
-                    Voir l'historique
-                </a>
+                {% if seuilLimite is defined and seuilLimite is not null %}
+                    <a href="{{ path('seuil_limite_historique') }}" class="btn btn-secondary">
+                        Voir l'historique
+                    </a>
+                {% endif %}
             </div>
         </div>
     </div>

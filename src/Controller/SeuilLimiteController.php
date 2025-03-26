@@ -29,45 +29,43 @@ class SeuilLimiteController extends BaseController
         }
         $seuilLimite = $this->seuilLimiteService->getSeuilLimite();
 
-        if (!$seuilLimite) {
+        /* if (!$seuilLimite) {
             throw $this->createNotFoundException('Seuil limite non trouvé');
-        }
+        } */
 
         return $this->render('seuil_limite/index.html.twig', [
             'seuilLimite' => $seuilLimite,
         ]);
     }
 
-    #[Route('/configuration/taux/modifier', name: 'seuil_limite_modifier',methods: ['GET','POST'])]
+    #[Route('/configuration/taux/save', name: 'seuil_limite_modifier',methods: ['GET','POST'])]
 
-    public function modifier(Request $request): Response
-    {
-        $authCheck = $this->checkAuthentication();
-        if ($authCheck) {
-            return $authCheck;
-        }
-        $seuilLimite = $this->seuilLimiteService->getSeuilLimite();
+    public function modifier(Request $request): Response{
+    
+    $seuilLimite = $this->seuilLimiteService->getSeuilLimite();
 
-        if (!$seuilLimite) {
-            throw $this->createNotFoundException('Seuil limite non trouvé');
-        }
-
-        if ($request->isMethod('POST')) {
-            $taux = floatval($request->request->get('pourcentage'));
+    if ($request->isMethod('POST')) {
+        $taux = floatval($request->request->get('pourcentage'));
+        
+        // Vérification si le seuil existe déjà
+        if ($seuilLimite !== null && isset($seuilLimite['id'])) {
             $updatedSeuilLimite = $this->seuilLimiteService->updateSeuilLimite($seuilLimite['id'], $taux);
-
-            if ($updatedSeuilLimite) {
-                $this->addFlash('success', 'Le taux d\'alerte a été mis à jour avec succès.');
-                return $this->redirectToRoute('seuil_limite_configuration');
-            } else {
-                $this->addFlash('error', 'Une erreur s\'est produite lors de la mise à jour du taux d\'alerte.');
-            }
+        } else {
+            $updatedSeuilLimite = $this->seuilLimiteService->saveSeuilLimite($taux);
         }
 
-        return $this->render('seuil_limite/modifier.html.twig', [
-            'seuilLimite' => $seuilLimite,
-        ]);
+        if ($updatedSeuilLimite) {
+            $this->addFlash('success', 'Le taux d\'alerte a été mis à jour avec succès.');
+            return $this->redirectToRoute('seuil_limite_configuration');
+        } else {
+            $this->addFlash('error', 'Une erreur s\'est produite lors de la mise à jour du taux d\'alerte.');
+        }
     }
+
+    return $this->render('seuil_limite/modifier.html.twig', [
+        'seuilLimite' => $seuilLimite,
+    ]);
+}
 
     #[Route('/configuration/taux/all', name: 'seuil_limite_historique')]
 

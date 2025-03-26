@@ -82,7 +82,7 @@ body {
     margin: 0 0 0.5rem 0;
 }
 
-.stat-card .stat-value {
+.stat-card a {
     color: var(--primary);
     font-size: 2rem;
     font-weight: 700;
@@ -92,7 +92,7 @@ body {
     position: relative;
 }
 
-.stat-card .stat-value::after {
+.stat-card a::after {
     content: '';
     position: absolute;
     bottom: -2px;
@@ -103,12 +103,12 @@ body {
     transition: width 0.3s ease;
 }
 
-.stat-card .stat-value:hover {
+.stat-card a:hover {
     color: var(--secondary);
     transform: translateX(5px);
 }
 
-.stat-card .stat-value:hover::after {
+.stat-card a:hover::after {
     width: 100%;
 }
 
@@ -183,7 +183,7 @@ canvas {
         font-size: 1.1rem;
     }
     
-    .stat-card .stat-value {
+    .stat-card a {
         font-size: 1.5rem;
     }
     
@@ -228,20 +228,20 @@ canvas {
             <div class="card stat-card">
                 <div>
                     <h2>Total Dépenses lead</h2>
-                    <span class="stat-value">{{ totalExpensesLead }}</span>
+                    <a href="{{ path('lead_expenses') }}">{{ totalExpensesLead }}</a>
                 </div>
             </div>
 
             <div class="card stat-card">
                 <div>
                     <h2>Total Dépenses ticket</h2>
-                    <span class="stat-value">{{ totalExpensesTicket }}</span>
+                    <a href="{{ path('ticket_expenses') }}">{{ totalExpensesTicket }}</a>
                 </div>
             </div>
             <div class="card stat-card">
                 <div>
                     <h2>Budget total client</h2>
-                    <span class="stat-value">{{ budgetTotal }}</span>
+                    <a href="{{ path('all_budgets') }}">{{ budgetTotal }}</a>
                 </div>
             </div>
         </div>
@@ -309,11 +309,23 @@ canvas {
                 plugins: {
                     legend: {
                         position: 'bottom'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.dataset.label + ': ' + context.raw;
+                            }
+                        }
                     }
                 },
                 scales: {
                     y: {
-                        beginAtZero: true
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return value;
+                            }
+                        }
                     }
                 }
             }
@@ -341,11 +353,23 @@ canvas {
                 plugins: {
                     legend: {
                         position: 'bottom'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.dataset.label + ': ' + context.raw;
+                            }
+                        }
                     }
                 },
                 scales: {
                     y: {
-                        beginAtZero: true
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return value;
+                            }
+                        }
                     }
                 }
             }
@@ -382,6 +406,13 @@ canvas {
                 plugins: {
                     legend: {
                         position: 'bottom'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.label + ': ' + context.raw;
+                            }
+                        }
                     }
                 }
             }
